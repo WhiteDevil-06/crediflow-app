@@ -13,7 +13,10 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const app = express();
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({
+    origin: ['http://localhost:5173', 'https://crediflow-nu.vercel.app', 'https://crediflow-app.vercel.app'],
+    credentials: true,
+}));
 app.use(express.json());
 
 // Connect DB
