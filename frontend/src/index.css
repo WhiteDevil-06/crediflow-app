@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --bg-main: #f8fafc;
+        --bg-card: #ffffff;
+        --bg-sidebar: #ffffff;
+        --bg-navbar: #ffffff;
+        --border-color: #e2e8f0;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --input-bg: #f1f5f9;
+        --nav-hover: #f1f5f9;
+    }
+
+    .dark {
+        --bg-main: #030712;
+        --bg-card: #111827;
+        --bg-sidebar: #111827;
+        --bg-navbar: #111827;
+        --border-color: #1f2937;
+        --text-main: #f1f5f9;
+        --text-muted: #94a3b8;
+        --input-bg: #1f2937;
+        --nav-hover: #1f2937;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        @apply transition-colors duration-200;
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        font-family: 'Inter', sans-serif;
+    }
+
+    ::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background-color: var(--bg-main);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-gray-400 dark:bg-gray-700 rounded-full;
+    }
+}
+
+@layer components {
+    .card {
+        @apply rounded-2xl p-6 shadow-sm border transition-all duration-200;
+        background-color: var(--bg-card);
+        border-color: var(--border-color);
+    }
+
+    .btn-primary {
+        @apply bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-500/20 active:scale-95;
+    }
+
+    .btn-secondary {
+        @apply font-semibold py-2.5 px-5 rounded-xl transition-all duration-200 active:scale-95 flex items-center justify-center gap-2;
+        background-color: var(--input-bg);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        @apply brightness-95 dark:brightness-125;
+    }
+
+    .btn-danger {
+        @apply bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 shadow-sm;
+    }
+
+    .input {
+        @apply w-full rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 border;
+        background-color: var(--input-bg);
+        border-color: var(--border-color);
+        color: var(--text-main);
+    }
+
+    .input::placeholder {
+        color: var(--text-muted);
+    }
+
+    .label {
+        @apply block text-sm font-medium mb-1.5;
+        color: var(--text-muted);
+    }
+
+    .badge-active {
+        @apply bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-green-500/20;
+    }
+
+    .badge-overdue {
+        @apply bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-red-500/20;
+    }
+
+    .badge-completed {
+        @apply bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-blue-500/20;
+    }
+
+    .badge-given {
+        @apply bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-emerald-500/20;
+    }
+
+    .badge-taken {
+        @apply bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-orange-500/20;
+    }
+}
