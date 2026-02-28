@@ -14,7 +14,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://crediflow-nu.vercel.app', 'https://crediflow-app.vercel.app'],
+    origin: ['http://localhost:5173', 'https://crediflow-nu.vercel.app', 'https://crediflow-app.vercel.app', 'https://crediflow-app-backend.onrender.com'],
     credentials: true,
 }));
 app.use(express.json());
