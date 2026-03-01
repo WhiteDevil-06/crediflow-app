@@ -88,11 +88,11 @@ export default function AddLoan() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label className="label">Principal (₹) *</label>
-                            <input id="loan-amount" type="number" placeholder="10000" className="input" value={form.principalAmount} onChange={e => set('principalAmount', e.target.value)} required />
+                            <input id="loan-amount" type="number" placeholder="10000" className="input" value={form.principalAmount} min="1" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} onChange={e => set('principalAmount', e.target.value)} required />
                         </div>
                         <div>
                             <label className="label">Interest Rate (%) *</label>
-                            <input id="loan-rate" type="number" step="0.01" placeholder="2" className="input" value={form.interestRate} onChange={e => set('interestRate', e.target.value)} required />
+                            <input id="loan-rate" type="number" step="0.01" placeholder="2" className="input" value={form.interestRate} min="0.01" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} onChange={e => set('interestRate', e.target.value)} required />
                         </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -118,7 +118,7 @@ export default function AddLoan() {
                         </div>
                         <div>
                             <label className="label">Duration (months) *</label>
-                            <input id="loan-duration" type="number" placeholder="12" className="input" value={form.durationMonths} onChange={e => set('durationMonths', e.target.value)} required />
+                            <input id="loan-duration" type="number" placeholder="12" className="input" value={form.durationMonths} min="1" onKeyDown={(e) => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()} onChange={e => set('durationMonths', e.target.value.replace(/\D/g, ''))} required />
                         </div>
                     </div>
                     <div>

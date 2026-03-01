@@ -48,12 +48,12 @@ export default function AddCustomer() {
                     <div>
                         <label className="label">Full Name *</label>
                         <input id="customer-name" type="text" placeholder="Customer name" className="input" value={form.name}
-                            onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                            onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^A-Za-z\s]/g, '') })} required />
                     </div>
                     <div>
                         <label className="label">Phone</label>
-                        <input id="customer-phone" type="tel" placeholder="+91 9876543210" className="input" value={form.phone}
-                            onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+                        <input id="customer-phone" type="tel" placeholder="10-digit number" className="input" value={form.phone}
+                            onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })} />
                     </div>
                     <div>
                         <label className="label">Address</label>

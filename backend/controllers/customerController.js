@@ -6,7 +6,7 @@ const getCustomers = async (req, res) => {
         const customers = await Customer.find({ userId: req.user._id }).sort({ createdAt: -1 });
         res.json({ success: true, data: customers });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
     }
 };
 
@@ -19,7 +19,7 @@ const createCustomer = async (req, res) => {
         const customer = await Customer.create({ userId: req.user._id, name, phone, address, notes });
         res.status(201).json({ success: true, data: customer });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
     }
 };
 
@@ -30,7 +30,7 @@ const getCustomer = async (req, res) => {
         if (!customer) return res.status(404).json({ success: false, message: 'Customer not found' });
         res.json({ success: true, data: customer });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
     }
 };
 
@@ -45,7 +45,7 @@ const updateCustomer = async (req, res) => {
         if (!customer) return res.status(404).json({ success: false, message: 'Customer not found' });
         res.json({ success: true, data: customer });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
     }
 };
 
@@ -56,7 +56,7 @@ const deleteCustomer = async (req, res) => {
         if (!customer) return res.status(404).json({ success: false, message: 'Customer not found' });
         res.json({ success: true, message: 'Customer deleted' });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
     }
 };
 

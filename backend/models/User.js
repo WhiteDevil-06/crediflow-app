@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const UserSchema = new mongoose.Schema({
-    name: { type: String, required: [true, 'Name is required'], trim: true, maxlength: 60 },
+    name: { type: String, required: [true, 'Name is required'], trim: true, match: [/^[A-Za-z\s]+$/, 'Name can only contain letters and spaces'], maxlength: 60 },
     email: {
         type: String,
         required: [true, 'Email is required'],

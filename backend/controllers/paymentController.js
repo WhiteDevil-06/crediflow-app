@@ -30,7 +30,7 @@ const recordPayment = async (req, res) => {
 
         res.status(201).json({ success: true, data: payment, remainingBalance: loan.remainingBalance, loanStatus: loan.status });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
     }
 };
 
@@ -41,7 +41,7 @@ const getPaymentsByLoan = async (req, res) => {
             .sort({ paymentDate: -1 });
         res.json({ success: true, data: payments });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
     }
 };
 

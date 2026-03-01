@@ -23,7 +23,7 @@ const getLoans = async (req, res) => {
 
         res.json({ success: true, data: loans });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
     }
 };
 
@@ -68,7 +68,7 @@ const createLoan = async (req, res) => {
         await loan.populate('customerId', 'name phone');
         res.status(201).json({ success: true, data: loan });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
     }
 };
 
@@ -80,7 +80,7 @@ const getLoan = async (req, res) => {
         if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
         res.json({ success: true, data: loan });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
     }
 };
 
@@ -95,7 +95,7 @@ const updateLoan = async (req, res) => {
         if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
         res.json({ success: true, data: loan });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
     }
 };
 
@@ -106,7 +106,7 @@ const deleteLoan = async (req, res) => {
         if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
         res.json({ success: true, message: 'Loan deleted' });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
     }
 };
 

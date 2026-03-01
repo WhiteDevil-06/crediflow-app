@@ -34,7 +34,7 @@ function PaymentModal({ loan, onClose, onSuccess }) {
                     <div>
                         <label className="label">Amount (₹) *</label>
                         <input id="payment-amount" type="number" placeholder={`Max: ${fmt(loan.remainingBalance)}`} className="input"
-                            value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} required />
+                            value={form.amount} min="1" max={loan.remainingBalance} onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} onChange={e => setForm({ ...form, amount: e.target.value })} required />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>

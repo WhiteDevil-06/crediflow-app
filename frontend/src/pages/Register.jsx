@@ -48,7 +48,7 @@ export default function Register() {
                             <div>
                                 <label className="label">Full Name</label>
                                 <input id="name" type="text" placeholder="John Doe" className="input" value={form.name}
-                                    onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                                    onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^A-Za-z\s]/g, '') })} required />
                             </div>
                             <div>
                                 <label className="label">Email</label>
