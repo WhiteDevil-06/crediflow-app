@@ -41,8 +41,11 @@ const login = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Email and password required' });
 
         const user = await User.findOne({ email });
-        if (!user || !(await user.matchPassword(password)))
-            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        if (!user)
+            return res.status(404).json({ success: false, message: 'User not found. Redirecting to create account...' });
+
+        if (!(await user.matchPassword(password)))
+            return res.status(401).json({ success: false, message: 'Wrong password, please retry' });
 
         res.json({
             success: true,

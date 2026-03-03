@@ -5,12 +5,14 @@ import { Calculator as CalcIcon, Zap, ArrowLeft } from 'lucide-react';
 const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 
 export default function Calculator() {
-    const [form, setForm] = useState({ principal: '', rate: '', duration: '', interestType: 'SIMPLE', interestFrequency: 'MONTHLY' });
+    const [form, setForm] = useState({ principal: '', rate: '', duration: '', durationUnit: 'MONTHS', interestType: 'SIMPLE', interestFrequency: 'MONTHLY' });
     const [result, setResult] = useState(null);
 
     const calculate = (e) => {
         e.preventDefault();
-        const P = Number(form.principal), r = Number(form.rate), t = Number(form.duration);
+        const P = Number(form.principal), r = Number(form.rate);
+        let t = Number(form.duration);
+        if (form.durationUnit === 'YEARS') t *= 12;
         if (!P || !r || !t) return;
         const mr = form.interestFrequency === 'YEARLY' ? r / 12 / 100 : r / 100;
         const total = form.interestType === 'SIMPLE' ? P * (1 + mr * t) : P * Math.pow(1 + mr, t);
@@ -23,7 +25,7 @@ export default function Calculator() {
         });
     };
 
-    const clear = () => { setForm({ principal: '', rate: '', duration: '', interestType: 'SIMPLE', interestFrequency: 'MONTHLY' }); setResult(null); };
+    const clear = () => { setForm({ principal: '', rate: '', duration: '', durationUnit: 'MONTHS', interestType: 'SIMPLE', interestFrequency: 'MONTHLY' }); setResult(null); };
     const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
     return (
@@ -46,12 +48,18 @@ export default function Calculator() {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="label">Interest Rate (%)</label>
-                                <input id="calc-rate" type="number" step="0.01" placeholder="e.g. 2" className="input" value={form.rate} onChange={e => set('rate', e.target.value)} required />
+                                <label className="label">Interest Rate (% {form.interestFrequency === 'YEARLY' ? 'per year' : 'per month'})</label>
+                                <input id="calc-rate" type="number" step="0.01" placeholder={form.interestFrequency === 'YEARLY' ? '12' : '1'} className="input" value={form.rate} onChange={e => set('rate', e.target.value)} required />
                             </div>
                             <div>
-                                <label className="label">Duration (months)</label>
-                                <input id="calc-duration" type="number" placeholder="e.g. 12" className="input" value={form.duration} onChange={e => set('duration', e.target.value)} required />
+                                <div className="flex justify-between items-center mb-1">
+                                    <label className="label !mb-0">Duration</label>
+                                    <div className="flex bg-[var(--bg-main)] border border-[var(--border-color)] rounded-md p-0.5">
+                                        <button type="button" onClick={() => set('durationUnit', 'MONTHS')} className={`px-2 py-0.5 text-xs rounded transition-all ${form.durationUnit === 'MONTHS' ? 'bg-blue-600 text-white' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}>Mo</button>
+                                        <button type="button" onClick={() => set('durationUnit', 'YEARS')} className={`px-2 py-0.5 text-xs rounded transition-all ${form.durationUnit === 'YEARS' ? 'bg-blue-600 text-white' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}>Yr</button>
+                                    </div>
+                                </div>
+                                <input id="calc-duration" type="number" placeholder={form.durationUnit === 'YEARS' ? "e.g. 2" : "e.g. 24"} className="input" value={form.duration} onChange={e => set('duration', e.target.value)} required />
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">

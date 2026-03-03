@@ -7,9 +7,10 @@ import { Link } from 'react-router-dom';
 const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 
 function calcPreview(form) {
-    const { principalAmount, interestRate, durationMonths, interestType, interestFrequency } = form;
-    if (!principalAmount || !interestRate || !durationMonths) return null;
-    const P = Number(principalAmount), r = Number(interestRate), t = Number(durationMonths);
+    const { principalAmount, interestRate, duration, durationUnit, interestType, interestFrequency } = form;
+    if (!principalAmount || !interestRate || !duration) return null;
+    const P = Number(principalAmount), r = Number(interestRate);
+    const t = durationUnit === 'YEARS' ? Number(duration) * 12 : Number(duration);
     const mr = interestFrequency === 'YEARLY' ? r / 12 / 100 : r / 100;
     const total = interestType === 'SIMPLE' ? P * (1 + mr * t) : P * Math.pow(1 + mr, t);
     const totalInterest = total - P;
@@ -24,7 +25,7 @@ export default function AddLoan() {
     const [form, setForm] = useState({
         customerId: preCustomer || '', loanType: 'GIVEN', principalAmount: '',
         interestRate: '', interestType: 'SIMPLE', interestFrequency: 'MONTHLY',
-        startDate: new Date().toISOString().slice(0, 10), durationMonths: '', notes: '',
+        startDate: new Date().toISOString().slice(0, 10), duration: '', durationUnit: 'MONTHS', notes: '',
     });
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -41,7 +42,11 @@ export default function AddLoan() {
         setLoading(true);
         try {
             const fd = new FormData();
-            Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+            Object.entries(form).forEach(([k, v]) => {
+                if (k === 'duration' || k === 'durationUnit') return;
+                fd.append(k, v);
+            });
+            fd.append('durationMonths', form.durationUnit === 'YEARS' ? String(Number(form.duration) * 12) : form.duration);
             if (file) fd.append('document', file);
             await loanAPI.create(fd);
             navigate('/loans');
@@ -91,8 +96,8 @@ export default function AddLoan() {
                             <input id="loan-amount" type="number" placeholder="10000" className="input" value={form.principalAmount} min="1" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} onChange={e => set('principalAmount', e.target.value)} required />
                         </div>
                         <div>
-                            <label className="label">Interest Rate (%) *</label>
-                            <input id="loan-rate" type="number" step="0.01" placeholder="2" className="input" value={form.interestRate} min="0.01" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} onChange={e => set('interestRate', e.target.value)} required />
+                            <label className="label">Interest Rate (% {form.interestFrequency === 'YEARLY' ? 'per year' : 'per month'}) *</label>
+                            <input id="loan-rate" type="number" step="0.01" placeholder={form.interestFrequency === 'YEARLY' ? '12' : '2'} className="input" value={form.interestRate} min="0.01" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} onChange={e => set('interestRate', e.target.value)} required />
                         </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -117,8 +122,14 @@ export default function AddLoan() {
                             <input type="date" className="input" value={form.startDate} onChange={e => set('startDate', e.target.value)} required />
                         </div>
                         <div>
-                            <label className="label">Duration (months) *</label>
-                            <input id="loan-duration" type="number" placeholder="12" className="input" value={form.durationMonths} min="1" onKeyDown={(e) => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()} onChange={e => set('durationMonths', e.target.value.replace(/\D/g, ''))} required />
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="label !mb-0">Duration *</label>
+                                <div className="flex bg-[var(--bg-main)] border border-[var(--border-color)] rounded-md p-0.5">
+                                    <button type="button" onClick={() => set('durationUnit', 'MONTHS')} className={`px-2 py-0.5 text-xs rounded transition-all ${form.durationUnit === 'MONTHS' ? 'bg-blue-600 text-white' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}>Mo</button>
+                                    <button type="button" onClick={() => set('durationUnit', 'YEARS')} className={`px-2 py-0.5 text-xs rounded transition-all ${form.durationUnit === 'YEARS' ? 'bg-blue-600 text-white' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}>Yr</button>
+                                </div>
+                            </div>
+                            <input id="loan-duration" type="number" placeholder={form.durationUnit === 'YEARS' ? '1' : '12'} className="input" value={form.duration} min="1" onKeyDown={(e) => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()} onChange={e => set('duration', e.target.value.replace(/\D/g, ''))} required />
                         </div>
                     </div>
                     <div>

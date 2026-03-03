@@ -22,7 +22,13 @@ export default function Login() {
             login(res.data.user, res.data.token);
             navigate('/dashboard');
         } catch (err) {
-            setError(err.response?.data?.message || 'Login failed');
+            const errorMsg = err.response?.data?.message || 'Login failed';
+            setError(errorMsg);
+
+            // If user not found (404), redirect to register after a short delay so they can read the notification
+            if (err.response?.status === 404) {
+                setTimeout(() => navigate('/register'), 2500);
+            }
         } finally {
             setLoading(false);
         }
