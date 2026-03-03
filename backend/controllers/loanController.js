@@ -1,4 +1,5 @@
 const Loan = require('../models/Loan');
+const Payment = require('../models/Payment');
 const { calculateInterest } = require('../utils/interestCalculator');
 
 // GET /api/loans
@@ -102,9 +103,16 @@ const updateLoan = async (req, res) => {
 // DELETE /api/loans/:id
 const deleteLoan = async (req, res) => {
     try {
-        const loan = await Loan.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
+        const loan = await Loan.findOne({ _id: req.params.id, userId: req.user._id });
         if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
-        res.json({ success: true, message: 'Loan deleted' });
+
+        // Cascading Delete: Delete all payments associated with this loan first
+        await Payment.deleteMany({ loanId: loan._id });
+
+        // Delete the loan
+        await loan.deleteOne();
+
+        res.json({ success: true, message: 'Loan and all associated payments deleted successfully' });
     } catch (err) {
         res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
     }
