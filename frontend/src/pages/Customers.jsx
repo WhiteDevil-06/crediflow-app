@@ -2,20 +2,30 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { customerAPI } from '../services/api';
 import { Plus, Search, Phone, MapPin, Trash2, Eye } from 'lucide-react';
+import ConfirmModal from '../components/ConfirmModal';
+import toast from 'react-hot-toast';
 
 export default function Customers() {
     const [customers, setCustomers] = useState([]);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
+    const [confirmDelete, setConfirmDelete] = useState(null);
 
     useEffect(() => {
         customerAPI.getAll().then(r => setCustomers(r.data.data)).finally(() => setLoading(false));
     }, []);
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Delete this customer?')) return;
-        await customerAPI.remove(id);
-        setCustomers(cs => cs.filter(c => c._id !== id));
+    const handleDelete = async () => {
+        if (!confirmDelete) return;
+        try {
+            await customerAPI.remove(confirmDelete);
+            setCustomers(cs => cs.filter(c => c._id !== confirmDelete));
+            toast.success('Customer deleted');
+        } catch (error) {
+            toast.error('Failed to delete customer');
+        } finally {
+            setConfirmDelete(null);
+        }
     };
 
     const filtered = customers.filter(c =>
@@ -23,10 +33,27 @@ export default function Customers() {
         c.phone?.includes(search)
     );
 
-    if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" /></div>;
+    if (loading) return (
+        <div className="space-y-6">
+            <div className="flex items-center justify-between"><div className="w-32 h-8 skeleton"></div><div className="w-32 h-10 skeleton"></div></div>
+            <div className="w-full h-10 skeleton"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="card h-32 skeleton border-transparent"></div>)}
+            </div>
+        </div>
+    );
 
     return (
         <div className="space-y-6">
+            <ConfirmModal
+                isOpen={!!confirmDelete}
+                title="Delete Customer"
+                message="Are you sure you want to delete this customer? This action cannot be undone."
+                onConfirm={handleDelete}
+                onCancel={() => setConfirmDelete(null)}
+                confirmText="Delete"
+            />
+
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-xl font-bold text-[var(--text-main)]">Customers</h2>
@@ -67,15 +94,15 @@ export default function Customers() {
                                     <Link to={`/customers/${c._id}`} className="p-1.5 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all">
                                         <Eye size={15} />
                                     </Link>
-                                    <button onClick={() => handleDelete(c._id)} className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all">
+                                    <button onClick={() => setConfirmDelete(c._id)} className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all">
                                         <Trash2 size={15} />
                                     </button>
                                 </div>
                             </div>
-                            <h3 className="font-semibold text-gray-900 dark:text-white">{c.name}</h3>
-                            {c.phone && <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-1"><Phone size={12} />{c.phone}</p>}
-                            {c.address && <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-1"><MapPin size={12} />{c.address}</p>}
-                            {c.notes && <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 line-clamp-2">{c.notes}</p>}
+                            <h3 className="font-semibold text-[var(--text-main)] truncate" title={c.name}>{c.name}</h3>
+                            {c.phone && <p className="text-sm text-[var(--text-muted)] flex items-center gap-1.5 mt-1 overflow-hidden" title={c.phone}><Phone size={12} className="shrink-0" /><span className="truncate">{c.phone}</span></p>}
+                            {c.address && <p className="text-sm text-[var(--text-muted)] flex items-center gap-1.5 mt-1 overflow-hidden" title={c.address}><MapPin size={12} className="shrink-0" /><span className="truncate">{c.address}</span></p>}
+                            {c.notes && <p className="text-xs text-[var(--text-muted)] mt-2 line-clamp-2 break-words" title={c.notes}>{c.notes}</p>}
                         </div>
                     ))}
                 </div>

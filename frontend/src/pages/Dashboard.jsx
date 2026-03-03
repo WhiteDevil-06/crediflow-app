@@ -21,7 +21,20 @@ export default function Dashboard() {
             .finally(() => setLoading(false));
     }, []);
 
-    if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" /></div>;
+    if (loading) return (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map(i => <div key={i} className="card h-24 skeleton border-transparent"></div>)}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {[1, 2, 3].map(i => <div key={i} className="card h-24 skeleton border-transparent"></div>)}
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="card h-64 skeleton border-transparent"></div>
+                <div className="card h-64 skeleton border-transparent"></div>
+            </div>
+        </div>
+    );
     if (error) return <div className="card text-red-400 text-center">{error}</div>;
 
     return (

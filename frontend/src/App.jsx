@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { Toaster } from 'react-hot-toast';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 
@@ -66,6 +67,7 @@ const PublicRoute = ({ children }) => {
 export default function App() {
     return (
         <ThemeProvider>
+            <Toaster position="top-right" toastOptions={{ className: '!bg-[var(--bg-main)] !text-[var(--text-main)] !border !border-[var(--border-color)] !shadow-lg text-sm font-medium' }} />
             <BrowserRouter>
                 <Routes>
                     {/* Public routes */}
