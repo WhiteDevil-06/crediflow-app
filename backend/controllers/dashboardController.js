@@ -1,5 +1,6 @@
 const Loan = require('../models/Loan');
 const Payment = require('../models/Payment');
+const Notification = require('../models/Notification');
 
 // GET /api/dashboard/summary
 const getSummary = async (req, res) => {
@@ -30,6 +31,18 @@ const getSummary = async (req, res) => {
             if (loan.status === 'ACTIVE' && now > dueDate) {
                 loan.status = 'OVERDUE';
                 await loan.save();
+
+                // Generate Notification (Zero Error: Avoid Duplication)
+                const existingAlert = await Notification.findOne({ loanId: loan._id, type: 'WARNING', read: false });
+                if (!existingAlert) {
+                    await Notification.create({
+                        userId: loan.userId,
+                        loanId: loan._id,
+                        title: 'Payment Overdue',
+                        message: `The loan for ${loan.customerId ? loan.customerId.name : 'a customer'} is now overdue.`,
+                        type: 'WARNING'
+                    });
+                }
             }
 
             if (loan.status === 'OVERDUE') overduePayments.push(loan);
