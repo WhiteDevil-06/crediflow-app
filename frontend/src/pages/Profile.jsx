@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Calendar, LogOut, Bell, Save } from 'lucide-react';
+import { User, Mail, Calendar, LogOut, Bell, Save, Trash2 } from 'lucide-react';
 import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
+import ConfirmModal from '../components/ConfirmModal';
 
 export default function Profile() {
     const { user, token, login, logout } = useAuth();
@@ -13,6 +14,8 @@ export default function Profile() {
     const [emailTime, setEmailTime] = useState(user?.emailAlerts?.time || '08:00');
     const [currency, setCurrency] = useState(user?.preferences?.currency || 'INR');
     const [saving, setSaving] = useState(false);
+    const [showResetModal, setShowResetModal] = useState(false);
+    const [resetting, setResetting] = useState(false);
 
     const handleLogout = () => { logout(); navigate('/login'); };
 
@@ -29,6 +32,20 @@ export default function Profile() {
             toast.error(error.response?.data?.message || 'Failed to save preferences');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleResetData = async () => {
+        setResetting(true);
+        try {
+            await authAPI.resetData();
+            toast.success('All account data has been completely wiped.');
+            // Reload window to clear states instantly
+            window.location.href = '/dashboard';
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to wipe data');
+        } finally {
+            setResetting(false);
         }
     };
 
@@ -122,11 +139,33 @@ export default function Profile() {
                 </button>
             </div>
 
+            <div className="card border-red-500/30 bg-red-500/5">
+                <h3 className="text-lg font-bold text-red-500 flex items-center gap-2 mb-2">
+                    <Trash2 size={18} /> Danger Zone
+                </h3>
+                <p className="text-xs text-[var(--text-muted)] mb-4">
+                    Permanently delete all your customers, loans, payments, and tracked notifications. This action cannot be undone.
+                </p>
+                <button onClick={() => setShowResetModal(true)} disabled={resetting} className="btn-danger w-full flex justify-center items-center gap-2">
+                    {resetting ? 'Wiping Data...' : 'Wipe All Data'}
+                </button>
+            </div>
+
             <div className="card">
-                <button onClick={handleLogout} className="btn-danger w-full flex items-center justify-center gap-2">
+                <button onClick={handleLogout} className="btn-secondary w-full flex items-center justify-center gap-2">
                     <LogOut size={16} /> Logout
                 </button>
             </div>
+
+            <ConfirmModal
+                isOpen={showResetModal}
+                title="Wipe Account Data"
+                message="Are you absolutely sure? This will completely and permanently delete all specific Customers, Loans, Payments, and Notifications connected to your account. This action cannot be undone."
+                onConfirm={handleResetData}
+                onCancel={() => setShowResetModal(false)}
+                confirmText="Delete Everything"
+                requireInput="RESET"
+            />
         </div>
     );
 }

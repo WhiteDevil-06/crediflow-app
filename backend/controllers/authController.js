@@ -87,4 +87,20 @@ const updateProfile = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getMe, updateProfile };
+// DELETE /api/auth/reset-data
+const resetData = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        await Promise.all([
+            require('../models/Customer').deleteMany({ userId }),
+            require('../models/Loan').deleteMany({ userId }),
+            require('../models/Payment').deleteMany({ userId }),
+            require('../models/Notification').deleteMany({ userId })
+        ]);
+        res.json({ success: true, message: 'All account data has been wiped successfully.' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to reset data: ' + err.message });
+    }
+};
+
+module.exports = { register, login, getMe, updateProfile, resetData };

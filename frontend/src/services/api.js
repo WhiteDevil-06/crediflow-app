@@ -32,6 +32,7 @@ export const authAPI = {
     login: (data) => api.post('/api/auth/login', data),
     getMe: () => api.get('/api/auth/me'),
     updateProfile: (data) => api.put('/api/auth/profile', data),
+    resetData: () => api.delete('/api/auth/reset-data'),
 };
 
 // Customers
