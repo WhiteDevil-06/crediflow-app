@@ -7,10 +7,10 @@ import {
     TrendingUp, TrendingDown, DollarSign, AlertTriangle,
     Clock, CheckCircle, Users, Plus
 } from 'lucide-react';
-
-const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+import { useAuth } from '../context/AuthContext';
 
 export default function Dashboard() {
+    const { formatCurrency } = useAuth();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -54,10 +54,10 @@ export default function Dashboard() {
         <div className="space-y-6">
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <DashboardCard title="Total Lent" value={fmt(data?.totalLent)} icon={TrendingUp} color="green" subtitle="Money given out" />
-                <DashboardCard title="Total Borrowed" value={fmt(data?.totalBorrowed)} icon={TrendingDown} color="orange" subtitle="Money taken in" />
-                <DashboardCard title="Interest Earned" value={fmt(data?.totalInterestEarned)} icon={DollarSign} color="blue" subtitle="From completed loans" />
-                <DashboardCard title="Outstanding" value={fmt(data?.totalOutstanding)} icon={AlertTriangle} color="red" subtitle="Still to collect" />
+                <DashboardCard title="Total Lent" value={formatCurrency(data?.totalLent)} icon={TrendingUp} color="green" subtitle="Money given out" />
+                <DashboardCard title="Total Borrowed" value={formatCurrency(data?.totalBorrowed)} icon={TrendingDown} color="orange" subtitle="Money taken in" />
+                <DashboardCard title="Interest Earned" value={formatCurrency(data?.totalInterestEarned)} icon={DollarSign} color="blue" subtitle="From completed loans" />
+                <DashboardCard title="Outstanding" value={formatCurrency(data?.totalOutstanding)} icon={AlertTriangle} color="red" subtitle="Still to collect" />
             </div>
 
             {/* Status Row */}
@@ -101,8 +101,8 @@ export default function Dashboard() {
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={barData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                 <XAxis dataKey="name" tick={{ fill: 'var(--text-muted)', fontSize: 12 }} stroke="var(--border-color)" />
-                                <YAxis tickFormatter={(val) => `₹${val / 1000}k`} tick={{ fill: 'var(--text-muted)', fontSize: 12 }} stroke="var(--border-color)" width={60} />
-                                <Tooltip formatter={(value) => [fmt(value), 'Amount']} contentStyle={{ backgroundColor: 'var(--bg-main)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '8px' }} itemStyle={{ color: 'var(--text-main)' }} cursor={{ fill: 'var(--nav-hover)' }} />
+                                <YAxis tickFormatter={(val) => `${val / 1000}k`} tick={{ fill: 'var(--text-muted)', fontSize: 12 }} stroke="var(--border-color)" width={60} />
+                                <Tooltip formatter={(value) => [formatCurrency(value), 'Amount']} contentStyle={{ backgroundColor: 'var(--bg-main)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '8px' }} itemStyle={{ color: 'var(--text-main)' }} cursor={{ fill: 'var(--nav-hover)' }} />
                                 <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
                                     {barData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -130,7 +130,7 @@ export default function Dashboard() {
                                 <Link key={loan._id} to={`/loans/${loan._id}`} className="flex items-center justify-between p-3 bg-red-500/5 border border-red-500/20 rounded-xl hover:border-red-500/40 transition-all">
                                     <div>
                                         <p className="text-sm font-medium text-[var(--text-main)]">{loan.customerId?.name}</p>
-                                        <p className="text-xs text-[var(--text-muted)]">{fmt(loan.remainingBalance)} remaining</p>
+                                        <p className="text-xs text-[var(--text-muted)]">{formatCurrency(loan.remainingBalance)} remaining</p>
                                     </div>
                                     <span className="badge-overdue">OVERDUE</span>
                                 </Link>
@@ -152,10 +152,10 @@ export default function Dashboard() {
                             {data?.recentTransactions?.map(p => (
                                 <div key={p._id} className="flex items-center justify-between p-3 bg-[var(--nav-hover)] rounded-xl">
                                     <div>
-                                        <p className="text-sm font-medium text-[var(--text-main)]">{fmt(p.amount)}</p>
+                                        <p className="text-sm font-medium text-[var(--text-main)]">{formatCurrency(p.amount)}</p>
                                         <p className="text-xs text-[var(--text-muted)]">{p.paymentMethod} · {new Date(p.paymentDate).toLocaleDateString('en-IN')}</p>
                                     </div>
-                                    <span className="text-green-400 text-sm font-semibold">+{fmt(p.amount)}</span>
+                                    <span className="text-green-400 text-sm font-semibold">+{formatCurrency(p.amount)}</span>
                                 </div>
                             ))}
                         </div>

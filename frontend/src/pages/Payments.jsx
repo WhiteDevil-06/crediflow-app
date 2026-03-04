@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { paymentAPI, loanAPI } from '../services/api';
 import { CreditCard } from 'lucide-react';
-
-const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;
+import { useAuth } from '../context/AuthContext';
 
 export default function Payments() {
+    const { formatCurrency } = useAuth();
     const [loans, setLoans] = useState([]);
     const [allPayments, setAllPayments] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -43,7 +43,7 @@ export default function Payments() {
                                     <CreditCard size={16} className="text-green-600 dark:text-green-400" />
                                 </div>
                                 <div>
-                                    <p className="font-semibold text-[var(--text-main)]">{fmt(p.amount)}</p>
+                                    <p className="font-semibold text-[var(--text-main)]">{formatCurrency(p.amount)}</p>
                                     <p className="text-xs text-[var(--text-muted)]">{p.loan?.customerId?.name || '—'} · {p.paymentMethod}</p>
                                     {p.notes && <p className="text-xs text-[var(--text-muted)]">{p.notes}</p>}
                                 </div>

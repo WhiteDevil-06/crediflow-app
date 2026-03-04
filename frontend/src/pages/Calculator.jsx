@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calculator as CalcIcon, Zap, ArrowLeft } from 'lucide-react';
-
-const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+import { useAuth } from '../context/AuthContext';
 
 export default function Calculator() {
+    const { formatCurrency } = useAuth();
     const [form, setForm] = useState({ principal: '', rate: '', duration: '', durationUnit: 'MONTHS', interestType: 'SIMPLE', interestFrequency: 'MONTHLY' });
     const [result, setResult] = useState(null);
 
@@ -43,7 +43,7 @@ export default function Calculator() {
                 <div className="card space-y-4">
                     <form onSubmit={calculate} className="space-y-4">
                         <div>
-                            <label className="label">Principal Amount (₹)</label>
+                            <label className="label">Principal Amount</label>
                             <input id="calc-principal" type="number" placeholder="e.g. 50000" className="input" value={form.principal} onChange={e => set('principal', e.target.value)} required />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
@@ -93,10 +93,10 @@ export default function Calculator() {
                             <h3 className="font-semibold text-[var(--text-main)]">Results</h3>
                             <div className="grid grid-cols-2 gap-3">
                                 {[
-                                    ['Principal', fmt(result.principal), 'text-white'],
-                                    ['Monthly Interest', fmt(result.monthlyInterest), 'text-yellow-400'],
-                                    ['Total Interest', fmt(result.totalInterest), 'text-orange-400'],
-                                    ['Total Payable', fmt(result.totalAmount), 'text-blue-400'],
+                                    ['Principal', formatCurrency(result.principal), 'text-white'],
+                                    ['Monthly Interest', formatCurrency(result.monthlyInterest), 'text-yellow-400'],
+                                    ['Total Interest', formatCurrency(result.totalInterest), 'text-orange-400'],
+                                    ['Total Payable', formatCurrency(result.totalAmount), 'text-blue-400'],
                                 ].map(([k, v, c]) => (
                                     <div key={k} className="bg-[var(--nav-hover)] border border-[var(--border-color)] rounded-xl p-4">
                                         <p className="text-xs text-[var(--text-muted)]">{k}</p>

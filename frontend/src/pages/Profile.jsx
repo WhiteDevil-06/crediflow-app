@@ -11,6 +11,7 @@ export default function Profile() {
 
     const [emailEnabled, setEmailEnabled] = useState(user?.emailAlerts?.enabled ?? true);
     const [emailTime, setEmailTime] = useState(user?.emailAlerts?.time || '08:00');
+    const [currency, setCurrency] = useState(user?.preferences?.currency || 'INR');
     const [saving, setSaving] = useState(false);
 
     const handleLogout = () => { logout(); navigate('/login'); };
@@ -19,7 +20,8 @@ export default function Profile() {
         setSaving(true);
         try {
             const res = await authAPI.updateProfile({
-                emailAlerts: { enabled: emailEnabled, time: emailTime }
+                emailAlerts: { enabled: emailEnabled, time: emailTime },
+                preferences: { ...user?.preferences, currency }
             });
             login(res.data.user, token);
             toast.success('Preferences saved successfully!');
@@ -98,6 +100,22 @@ export default function Profile() {
                         </select>
                     </div>
                 )}
+
+                <div className="pt-2 border-t border-[var(--border-color)]">
+                    <label className="text-sm font-medium text-[var(--text-main)] mb-2 block">Application Currency</label>
+                    <select
+                        className="input-field"
+                        value={currency}
+                        onChange={(e) => setCurrency(e.target.value)}
+                    >
+                        <option value="INR">Indian Rupee (₹)</option>
+                        <option value="USD">US Dollar ($)</option>
+                        <option value="EUR">Euro (€)</option>
+                        <option value="GBP">British Pound (£)</option>
+                        <option value="AUD">Australian Dollar (A$)</option>
+                        <option value="CAD">Canadian Dollar (C$)</option>
+                    </select>
+                </div>
 
                 <button onClick={savePreferences} disabled={saving} className="btn-primary w-full flex justify-center items-center gap-2">
                     <Save size={16} /> {saving ? 'Saving...' : 'Save Preferences'}

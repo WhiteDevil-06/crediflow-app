@@ -4,10 +4,10 @@ import { loanAPI } from '../services/api';
 import { Plus, Filter } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
 import toast from 'react-hot-toast';
-
-const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;
+import { useAuth } from '../context/AuthContext';
 
 export default function Loans() {
+    const { formatCurrency } = useAuth();
     const [loans, setLoans] = useState([]);
     const [filter, setFilter] = useState('ALL');
     const [loading, setLoading] = useState(true);
@@ -101,8 +101,8 @@ export default function Loans() {
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className="font-bold text-[var(--text-main)]">{fmt(loan.principalAmount)}</p>
-                                <p className="text-xs text-[var(--text-muted)] mt-1 mb-2">{fmt(loan.remainingBalance)} remaining</p>
+                                <p className="font-bold text-[var(--text-main)]">{formatCurrency(loan.principalAmount)}</p>
+                                <p className="text-xs text-[var(--text-muted)] mt-1 mb-2">{formatCurrency(loan.remainingBalance)} remaining</p>
                                 <div className="flex items-center justify-end gap-2">
                                     <StatusBadge s={loan.status} />
                                     <button onClick={(e) => { e.preventDefault(); setConfirmDelete(loan._id); }} className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all border border-transparent hover:border-red-500/20">

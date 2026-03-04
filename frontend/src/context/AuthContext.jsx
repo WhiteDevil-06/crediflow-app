@@ -31,8 +31,18 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('unlox_token');
     };
 
+    const formatCurrency = (amount) => {
+        const currencyCode = user?.preferences?.currency || 'INR';
+        const num = Number(amount || 0);
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: currencyCode,
+            maximumFractionDigits: 0
+        }).format(num);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token, loading }}>
+        <AuthContext.Provider value={{ user, token, login, logout, formatCurrency, isAuthenticated: !!token, loading }}>
             {children}
         </AuthContext.Provider>
     );

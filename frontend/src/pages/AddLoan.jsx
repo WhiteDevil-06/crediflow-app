@@ -3,8 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { loanAPI, customerAPI } from '../services/api';
 import { ArrowLeft, Calculator } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+import { useAuth } from '../context/AuthContext';
 
 function calcPreview(form) {
     const { principalAmount, interestRate, duration, durationUnit, interestType, interestFrequency } = form;
@@ -18,6 +17,7 @@ function calcPreview(form) {
 }
 
 export default function AddLoan() {
+    const { formatCurrency } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const preCustomer = searchParams.get('customerId');
@@ -92,7 +92,7 @@ export default function AddLoan() {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label className="label">Principal (₹) *</label>
+                            <label className="label">Principal *</label>
                             <input id="loan-amount" type="number" placeholder="10000" className="input" value={form.principalAmount} min="1" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} onChange={e => set('principalAmount', e.target.value)} required />
                         </div>
                         <div>
@@ -150,9 +150,9 @@ export default function AddLoan() {
                         <h3 className="font-semibold text-[var(--text-main)] flex items-center gap-2 mb-4"><Calculator size={16} className="text-blue-500 dark:text-blue-400" />Interest Preview</h3>
                         {preview ? (
                             <div className="space-y-3">
-                                <div className="flex justify-between"><span className="text-[var(--text-muted)] text-sm">Monthly Interest</span><span className="text-[var(--text-main)] font-medium">{fmt(preview.monthlyInterest)}</span></div>
-                                <div className="flex justify-between"><span className="text-[var(--text-muted)] text-sm">Total Interest</span><span className="text-yellow-600 dark:text-yellow-400 font-medium">{fmt(preview.totalInterest)}</span></div>
-                                <div className="border-t border-[var(--border-color)] pt-3 flex justify-between"><span className="text-[var(--text-main)] font-semibold">Total Payable</span><span className="text-blue-600 dark:text-blue-400 font-bold text-lg">{fmt(preview.totalAmount)}</span></div>
+                                <div className="flex justify-between"><span className="text-[var(--text-muted)] text-sm">Monthly Interest</span><span className="text-[var(--text-main)] font-medium">{formatCurrency(preview.monthlyInterest)}</span></div>
+                                <div className="flex justify-between"><span className="text-[var(--text-muted)] text-sm">Total Interest</span><span className="text-yellow-600 dark:text-yellow-400 font-medium">{formatCurrency(preview.totalInterest)}</span></div>
+                                <div className="border-t border-[var(--border-color)] pt-3 flex justify-between"><span className="text-[var(--text-main)] font-semibold">Total Payable</span><span className="text-blue-600 dark:text-blue-400 font-bold text-lg">{formatCurrency(preview.totalAmount)}</span></div>
                             </div>
                         ) : (
                             <p className="text-gray-500 text-sm text-center py-4">Fill in the form to see the preview</p>

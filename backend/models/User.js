@@ -14,6 +14,9 @@ const UserSchema = new mongoose.Schema({
     emailAlerts: {
         enabled: { type: Boolean, default: true },
         time: { type: String, default: '08:00' } // Uses 24h string formats like 08:00, 14:00
+    },
+    preferences: {
+        currency: { type: String, default: 'INR', enum: ['INR', 'USD', 'EUR', 'GBP', 'AUD', 'CAD'] }
     }
 }, { timestamps: true });
 

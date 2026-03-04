@@ -26,7 +26,7 @@ const register = async (req, res) => {
         res.status(201).json({
             success: true,
             token: generateToken(user._id),
-            user: { id: user._id, name: user.name, email: user.email, emailAlerts: user.emailAlerts },
+            user: { id: user._id, name: user.name, email: user.email, emailAlerts: user.emailAlerts, preferences: user.preferences },
         });
     } catch (err) {
         res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
@@ -50,7 +50,7 @@ const login = async (req, res) => {
         res.json({
             success: true,
             token: generateToken(user._id),
-            user: { id: user._id, name: user.name, email: user.email, emailAlerts: user.emailAlerts },
+            user: { id: user._id, name: user.name, email: user.email, emailAlerts: user.emailAlerts, preferences: user.preferences },
         });
     } catch (err) {
         res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
@@ -59,7 +59,7 @@ const login = async (req, res) => {
 
 // GET /api/auth/me
 const getMe = async (req, res) => {
-    res.json({ success: true, user: { id: req.user._id, name: req.user.name, email: req.user.email, emailAlerts: req.user.emailAlerts } });
+    res.json({ success: true, user: { id: req.user._id, name: req.user.name, email: req.user.email, emailAlerts: req.user.emailAlerts, preferences: req.user.preferences } });
 };
 
 // PUT /api/auth/profile
@@ -72,11 +72,15 @@ const updateProfile = async (req, res) => {
             user.emailAlerts = req.body.emailAlerts;
         }
 
+        if (req.body.preferences !== undefined) {
+            user.preferences = req.body.preferences;
+        }
+
         await user.save();
 
         res.json({
             success: true,
-            user: { id: user._id, name: user.name, email: user.email, emailAlerts: user.emailAlerts }
+            user: { id: user._id, name: user.name, email: user.email, emailAlerts: user.emailAlerts, preferences: user.preferences }
         });
     } catch (err) {
         res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });

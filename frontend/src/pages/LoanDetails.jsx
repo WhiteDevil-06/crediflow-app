@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { loanAPI, paymentAPI } from '../services/api';
 import { ArrowLeft, FileText, CreditCard, X } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
-const fmt = (n) => `₹${Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
-
-function PaymentModal({ loan, onClose, onSuccess }) {
+function PaymentModal({ loan, onClose, onSuccess, formatCurrency }) {
     const [form, setForm] = useState({ amount: '', paymentDate: new Date().toISOString().slice(0, 10), paymentMethod: 'CASH', notes: '' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -32,8 +31,8 @@ function PaymentModal({ loan, onClose, onSuccess }) {
                 {error && <div className="bg-red-500/10 text-red-400 rounded-xl px-3 py-2 mb-3 text-sm">{error}</div>}
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="label">Amount (₹) *</label>
-                        <input id="payment-amount" type="number" placeholder={`Max: ${fmt(loan.remainingBalance)}`} className="input"
+                        <label className="label">Amount *</label>
+                        <input id="payment-amount" type="number" placeholder={`Max: ${formatCurrency(loan.remainingBalance)}`} className="input"
                             value={form.amount} min="1" max={loan.remainingBalance} onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} onChange={e => setForm({ ...form, amount: e.target.value })} required />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -60,6 +59,7 @@ function PaymentModal({ loan, onClose, onSuccess }) {
 }
 
 export default function LoanDetails() {
+    const { formatCurrency } = useAuth();
     const { id } = useParams();
     const [loan, setLoan] = useState(null);
     const [payments, setPayments] = useState([]);
@@ -82,7 +82,7 @@ export default function LoanDetails() {
 
     return (
         <div className="space-y-6">
-            {showModal && <PaymentModal loan={loan} onClose={() => setShowModal(false)} onSuccess={() => { setShowModal(false); fetchData(); }} />}
+            {showModal && <PaymentModal loan={loan} onClose={() => setShowModal(false)} onSuccess={() => { setShowModal(false); fetchData(); }} formatCurrency={formatCurrency} />}
 
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -115,14 +115,14 @@ export default function LoanDetails() {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                     {[
-                        ['Principal', fmt(loan.principalAmount)],
+                        ['Principal', formatCurrency(loan.principalAmount)],
                         ['Interest Rate', `${loan.interestRate}% ${loan.interestFrequency}`],
-                        ['Total Interest', fmt(loan.totalInterest)],
-                        ['Total Amount', fmt(loan.totalAmount)],
-                        ['Monthly Interest', fmt(loan.monthlyInterest)],
+                        ['Total Interest', formatCurrency(loan.totalInterest)],
+                        ['Total Amount', formatCurrency(loan.totalAmount)],
+                        ['Monthly Interest', formatCurrency(loan.monthlyInterest)],
                         ['Duration', `${loan.durationMonths} months`],
                         ['Start Date', new Date(loan.startDate).toLocaleDateString('en-IN')],
-                        ['Remaining', fmt(loan.remainingBalance)],
+                        ['Remaining', formatCurrency(loan.remainingBalance)],
                     ].map(([k, v]) => (
                         <div key={k} className="bg-[var(--nav-hover)] rounded-xl p-3 border border-[var(--border-color)]">
                             <p className="text-xs text-[var(--text-muted)]">{k}</p>
@@ -158,7 +158,7 @@ export default function LoanDetails() {
                         {payments.map(p => (
                             <div key={p._id} className="flex items-center justify-between p-3 bg-[var(--nav-hover)] rounded-xl border border-[var(--border-color)]">
                                 <div>
-                                    <p className="font-medium text-[var(--text-main)]">{fmt(p.amount)}</p>
+                                    <p className="font-medium text-[var(--text-main)]">{formatCurrency(p.amount)}</p>
                                     <p className="text-xs text-[var(--text-muted)]">{p.paymentMethod} · {p.notes}</p>
                                 </div>
                                 <p className="text-sm text-[var(--text-muted)]">{new Date(p.paymentDate).toLocaleDateString('en-IN')}</p>
