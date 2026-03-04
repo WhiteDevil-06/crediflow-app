@@ -90,7 +90,7 @@ export default function Profile() {
                     <div className="flex flex-col gap-2 p-3 bg-[var(--nav-hover)] border border-[var(--border-color)] rounded-xl animate-in fade-in slide-in-from-top-2">
                         <label className="text-sm font-medium text-[var(--text-main)]">Preferred Delivery Time</label>
                         <select
-                            className="input-field"
+                            className="input"
                             value={emailTime}
                             onChange={(e) => setEmailTime(e.target.value)}
                         >
@@ -104,7 +104,7 @@ export default function Profile() {
                 <div className="pt-2 border-t border-[var(--border-color)]">
                     <label className="text-sm font-medium text-[var(--text-main)] mb-2 block">Application Currency</label>
                     <select
-                        className="input-field"
+                        className="input"
                         value={currency}
                         onChange={(e) => setCurrency(e.target.value)}
                     >
