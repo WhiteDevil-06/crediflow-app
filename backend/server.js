@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const dbConnect = require('./config/db');
+const { startDailyReminders } = require('./utils/cronJobs');
 
 // Routes
 const authRoutes = require('./routes/authRoutes');
@@ -19,6 +20,9 @@ app.use(express.json());
 
 // Connect DB
 dbConnect();
+
+// Initialize Background Cron Jobs
+startDailyReminders();
 
 // API Routes
 app.use('/api/auth', authRoutes);
