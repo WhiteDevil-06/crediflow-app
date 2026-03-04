@@ -1,0 +1,15 @@
+Connected to MongoDB. 
+
+--- Phase 1: Setup --- 
+
+--- Phase 2: Execution (Building Email Data) --- 
+Calculated Overdue Array Length: 1
+Should be 1 (Alice). Name: Alice Overdue
+Calculated Upcoming Array Length: 1
+Should be 1 (Bob). Name: Bob Upcoming
+
+--- Phase 3: Email Service Test --- 
+Triggering sendEmail (Will soft-fail safely without credentials)... 
+Mail Result (Should be false due to missing credentials, avoiding crash): false
+
+✅ ALL BACKEND CRON & EMAIL TESTS PASSED. 

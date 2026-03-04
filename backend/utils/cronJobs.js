@@ -4,16 +4,36 @@ const Loan = require('../models/Loan');
 const { sendEmail } = require('./emailService');
 
 const startDailyReminders = () => {
-    // Run every day at 08:00 AM server time
+    // Run exactly at the 0th second of every single minute
     // cron pattern: minute hour dayOfMonth month dayOfWeek
-    cron.schedule('0 8 * * *', async () => {
-        console.log('⏰ Running Daily Cron Job: Checking for Due / Overdue Loans...');
+    cron.schedule('* * * * *', async () => {
         try {
-            const users = await User.find();
+            // Get current internal server time formatted identically to user DB preferences (forced to IST)
             const now = new Date();
+
+            const istTimeFormater = new Intl.DateTimeFormat('en-IN', {
+                timeZone: 'Asia/Kolkata',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+
+            // Format will be "HH:MM" in 24-hour style
+            const currentTimeStr = istTimeFormater.format(now);
+
+            // Only fetch users who explicitly have alerts ON AND asked for precisely this exact minute
+            const usersToNotifyRightNow = await User.find({
+                'emailAlerts.enabled': true,
+                'emailAlerts.time': currentTimeStr
+            });
+
+            if (usersToNotifyRightNow.length === 0) return;
+
+            console.log(`⏰ Cron Triggered at ${currentTimeStr}! Found ${usersToNotifyRightNow.length} user(s) requesting digests right now.`);
+
             const next3Days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
 
-            for (const user of users) {
+            for (const user of usersToNotifyRightNow) {
                 // Find all active/overdue loans for this user
                 const loans = await Loan.find({ userId: user._id, status: { $in: ['ACTIVE', 'OVERDUE'] } })
                     .populate('customerId', 'name');
@@ -35,15 +55,15 @@ const startDailyReminders = () => {
                 if (upcoming.length > 0 || overdue.length > 0) {
                     const htmlContent = buildEmailHTML(user.name, upcoming, overdue);
                     await sendEmail(user.email, 'CrediFlow Daily Payment Digest', htmlContent);
+                    console.log(`✉️ Dispatched custom digest to ${user.email} precisely at their requested time of ${currentTimeStr}.`);
                 }
             }
-            console.log('✅ Daily Cron Job Completed successfully.');
         } catch (error) {
-            console.error('❌ Error in Daily Cron Job:', error);
+            console.error('❌ Error in Dynamic Cron Job:', error);
         }
     });
 
-    console.log('🕒 Node-Cron Scheduler initialized: Daily Reminders set for 08:00 AM');
+    console.log('🕒 Node-Cron Scheduler initialized: Polling custom user delivery times continuously.');
 };
 
 const buildEmailHTML = (userName, upcoming, overdue) => {
