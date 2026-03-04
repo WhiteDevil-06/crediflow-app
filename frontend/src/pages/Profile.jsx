@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Calendar, LogOut, Bell, Save, Trash2 } from 'lucide-react';
+import { User, Mail, Calendar, LogOut, Bell, Save, Trash2, Clock } from 'lucide-react';
 import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../components/ConfirmModal';
@@ -18,6 +18,16 @@ export default function Profile() {
     const [saving, setSaving] = useState(false);
     const [showResetModal, setShowResetModal] = useState(false);
     const [resetting, setResetting] = useState(false);
+
+    useEffect(() => {
+        const handleEsc = (e) => {
+            if (e.key === 'Escape') setShowTimePicker(false);
+        };
+        if (showTimePicker) {
+            window.addEventListener('keydown', handleEsc);
+        }
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, [showTimePicker]);
 
     const handleLogout = () => { logout(); navigate('/login'); };
 
@@ -109,10 +119,11 @@ export default function Profile() {
                     <div className="flex flex-col gap-2 p-3 bg-[var(--nav-hover)] border border-[var(--border-color)] rounded-xl animate-in fade-in slide-in-from-top-2 relative">
                         <label className="text-sm font-medium text-[var(--text-main)]">Preferred Delivery Time</label>
                         <div
-                            className="input flex items-center justify-between cursor-pointer"
+                            className="flex items-center gap-3 p-3 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl cursor-pointer hover:border-blue-500 transition-colors"
                             onClick={() => setShowTimePicker(true)}
                         >
-                            <span className="text-[var(--text-main)] font-medium">
+                            <Clock size={16} className="text-blue-500" />
+                            <span className="text-[var(--text-main)] font-semibold text-lg">
                                 {(() => {
                                     const time = emailTime || '08:00';
                                     const [h, m] = time.split(':');
