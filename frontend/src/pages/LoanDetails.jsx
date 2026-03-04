@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { loanAPI, paymentAPI } from '../services/api';
-import { ArrowLeft, FileText, CreditCard, X } from 'lucide-react';
+import { ArrowLeft, FileText, CreditCard, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { generateAmortizationSchedule } from '../utils/amortization';
 
 function PaymentModal({ loan, onClose, onSuccess, formatCurrency }) {
     const [form, setForm] = useState({ amount: '', paymentDate: new Date().toISOString().slice(0, 10), paymentMethod: 'CASH', notes: '' });
@@ -65,6 +66,7 @@ export default function LoanDetails() {
     const [payments, setPayments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [showSchedule, setShowSchedule] = useState(false);
 
     const fetchData = async () => {
         const [lRes, pRes] = await Promise.all([loanAPI.getOne(id), paymentAPI.getByLoan(id)]);
@@ -79,6 +81,16 @@ export default function LoanDetails() {
     if (!loan) return <div className="card text-center text-gray-400">Loan not found</div>;
 
     const pct = Math.max(0, Math.min(100, ((loan.totalAmount - loan.remainingBalance) / loan.totalAmount) * 100));
+
+    const schedule = loan ? generateAmortizationSchedule(
+        loan.principalAmount,
+        loan.interestRate,
+        loan.durationMonths,
+        'MONTHS',
+        loan.interestType,
+        loan.interestFrequency,
+        loan.startDate
+    ) : [];
 
     return (
         <div className="space-y-6">
@@ -167,6 +179,48 @@ export default function LoanDetails() {
                     </div>
                 )}
             </div>
+
+            {/* Expected Amortization Schedule */}
+            {schedule && schedule.length > 0 && (
+                <div className="card">
+                    <div
+                        className="flex items-center justify-between cursor-pointer group"
+                        onClick={() => setShowSchedule(!showSchedule)}
+                    >
+                        <h3 className="font-semibold text-[var(--text-main)] group-hover:text-blue-500 transition-colors">Expected Amortization Schedule</h3>
+                        {showSchedule ? <ChevronUp size={20} className="text-[var(--text-muted)]" /> : <ChevronDown size={20} className="text-[var(--text-muted)]" />}
+                    </div>
+
+                    {showSchedule && (
+                        <div className="mt-4 overflow-x-auto animate-in fade-in slide-in-from-top-2 border-t border-[var(--border-color)] pt-4">
+                            <table className="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr className="border-b border-[var(--border-color)] text-[var(--text-muted)]">
+                                        <th className="pb-3 px-2">Month</th>
+                                        <th className="pb-3 px-2">Date</th>
+                                        <th className="pb-3 px-2">Payment</th>
+                                        <th className="pb-3 px-2">Principal</th>
+                                        <th className="pb-3 px-2">Interest</th>
+                                        <th className="pb-3 px-2">Remaining</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {schedule.map((row) => (
+                                        <tr key={row.month} className="border-b border-[var(--border-color)] hover:bg-[var(--nav-hover)] transition-colors">
+                                            <td className="py-3 px-2 font-medium text-[var(--text-main)]">{row.month}</td>
+                                            <td className="py-3 px-2 text-[var(--text-muted)]">{new Date(row.date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}</td>
+                                            <td className="py-3 px-2 font-semibold text-blue-600 dark:text-blue-400">{formatCurrency(row.payment)}</td>
+                                            <td className="py-3 px-2 text-[var(--text-main)]">{formatCurrency(row.principalPaid)}</td>
+                                            <td className="py-3 px-2 text-yellow-600 dark:text-yellow-500">{formatCurrency(row.interestPaid)}</td>
+                                            <td className="py-3 px-2 font-medium text-[var(--text-main)]">{formatCurrency(row.remainingBalance)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

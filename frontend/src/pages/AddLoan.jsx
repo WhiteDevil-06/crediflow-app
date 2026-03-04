@@ -4,17 +4,7 @@ import { loanAPI, customerAPI } from '../services/api';
 import { ArrowLeft, Calculator } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
-function calcPreview(form) {
-    const { principalAmount, interestRate, duration, durationUnit, interestType, interestFrequency } = form;
-    if (!principalAmount || !interestRate || !duration) return null;
-    const P = Number(principalAmount), r = Number(interestRate);
-    const t = durationUnit === 'YEARS' ? Number(duration) * 12 : Number(duration);
-    const mr = interestFrequency === 'YEARLY' ? r / 12 / 100 : r / 100;
-    const total = interestType === 'SIMPLE' ? P * (1 + mr * t) : P * Math.pow(1 + mr, t);
-    const totalInterest = total - P;
-    return { monthlyInterest: (totalInterest / t).toFixed(2), totalInterest: totalInterest.toFixed(2), totalAmount: total.toFixed(2) };
-}
+import { calcLoanTotals, generateAmortizationSchedule } from '../utils/amortization';
 
 export default function AddLoan() {
     const { formatCurrency } = useAuth();
@@ -30,7 +20,10 @@ export default function AddLoan() {
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const preview = calcPreview(form);
+    const [showSchedule, setShowSchedule] = useState(false);
+
+    const preview = calcLoanTotals(form.principalAmount, form.interestRate, form.duration, form.durationUnit, form.interestType, form.interestFrequency);
+    const schedule = showSchedule ? generateAmortizationSchedule(form.principalAmount, form.interestRate, form.duration, form.durationUnit, form.interestType, form.interestFrequency, form.startDate) : [];
 
     useEffect(() => {
         customerAPI.getAll().then(r => setCustomers(r.data.data));
@@ -153,6 +146,12 @@ export default function AddLoan() {
                                 <div className="flex justify-between"><span className="text-[var(--text-muted)] text-sm">Monthly Interest</span><span className="text-[var(--text-main)] font-medium">{formatCurrency(preview.monthlyInterest)}</span></div>
                                 <div className="flex justify-between"><span className="text-[var(--text-muted)] text-sm">Total Interest</span><span className="text-yellow-600 dark:text-yellow-400 font-medium">{formatCurrency(preview.totalInterest)}</span></div>
                                 <div className="border-t border-[var(--border-color)] pt-3 flex justify-between"><span className="text-[var(--text-main)] font-semibold">Total Payable</span><span className="text-blue-600 dark:text-blue-400 font-bold text-lg">{formatCurrency(preview.totalAmount)}</span></div>
+
+                                <button
+                                    onClick={() => setShowSchedule(!showSchedule)}
+                                    className="w-full mt-4 btn-secondary py-2 text-sm">
+                                    {showSchedule ? 'Hide Route Map' : 'View Repayment Schedule'}
+                                </button>
                             </div>
                         ) : (
                             <p className="text-gray-500 text-sm text-center py-4">Fill in the form to see the preview</p>
@@ -160,6 +159,36 @@ export default function AddLoan() {
                     </div>
                 </div>
             </div>
+
+            {showSchedule && schedule && schedule.length > 0 && (
+                <div className="card mt-6 overflow-x-auto animate-in fade-in slide-in-from-top-4">
+                    <h3 className="font-semibold text-[var(--text-main)] mb-4">Amortization Roadmap</h3>
+                    <table className="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr className="border-b border-[var(--border-color)] text-[var(--text-muted)]">
+                                <th className="pb-3 px-2">Month</th>
+                                <th className="pb-3 px-2">Date</th>
+                                <th className="pb-3 px-2">Payment</th>
+                                <th className="pb-3 px-2">Principal</th>
+                                <th className="pb-3 px-2">Interest</th>
+                                <th className="pb-3 px-2">Remaining</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {schedule.map((row) => (
+                                <tr key={row.month} className="border-b border-[var(--border-color)] hover:bg-[var(--nav-hover)] transition-colors">
+                                    <td className="py-3 px-2 font-medium text-[var(--text-main)]">{row.month}</td>
+                                    <td className="py-3 px-2 text-[var(--text-muted)]">{new Date(row.date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}</td>
+                                    <td className="py-3 px-2 font-semibold text-blue-600 dark:text-blue-400">{formatCurrency(row.payment)}</td>
+                                    <td className="py-3 px-2 text-[var(--text-main)]">{formatCurrency(row.principalPaid)}</td>
+                                    <td className="py-3 px-2 text-yellow-600 dark:text-yellow-500">{formatCurrency(row.interestPaid)}</td>
+                                    <td className="py-3 px-2 font-medium text-[var(--text-main)]">{formatCurrency(row.remainingBalance)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
     );
 }
