@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { dashboardAPI } from '../services/api';
 import DashboardCard from '../components/DashboardCard';
 import { Link } from 'react-router-dom';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import {
     TrendingUp, TrendingDown, DollarSign, AlertTriangle,
     Clock, CheckCircle, Users, Plus
@@ -37,6 +38,18 @@ export default function Dashboard() {
     );
     if (error) return <div className="card text-red-400 text-center">{error}</div>;
 
+    const pieData = data ? [
+        { name: 'Active', value: data.activeLoans, color: '#3b82f6' },
+        { name: 'Overdue', value: data.overdueCount, color: '#ef4444' },
+        { name: 'Completed', value: Math.max(0, (data.totalLoans || 0) - (data.activeLoans || 0) - (data.overdueCount || 0)), color: '#10b981' }
+    ] : [];
+
+    const barData = data ? [
+        { name: 'Total Lent', amount: data.totalLent, color: '#3b82f6' },
+        { name: 'Outstanding', amount: data.totalOutstanding, color: '#f59e0b' },
+        { name: 'Interest Earned', amount: data.totalInterestEarned, color: '#10b981' }
+    ] : [];
+
     return (
         <div className="space-y-6">
             {/* Summary Cards */}
@@ -52,6 +65,53 @@ export default function Dashboard() {
                 <DashboardCard title="Total Loans" value={data?.totalLoans || 0} icon={CheckCircle} color="purple" />
                 <DashboardCard title="Active Loans" value={data?.activeLoans || 0} icon={Clock} color="blue" />
                 <DashboardCard title="Overdue Loans" value={data?.overdueCount || 0} icon={AlertTriangle} color="red" />
+            </div>
+
+            {/* Analytics Charts */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Pie Chart */}
+                <div className="card h-80 flex flex-col relative z-0">
+                    <h2 className="font-semibold text-[var(--text-main)] mb-4">Portfolio Distribution</h2>
+                    <div className="flex-1 w-full min-h-[200px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                                    {pieData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                </Pie>
+                                <Tooltip formatter={(value) => [value, 'Count']} contentStyle={{ backgroundColor: 'var(--bg-main)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '8px' }} itemStyle={{ color: 'var(--text-main)' }} />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div className="flex justify-center gap-4 mt-2">
+                        {pieData.map(entry => (
+                            <div key={entry.name} className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
+                                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></span>
+                                {entry.name}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Bar Chart */}
+                <div className="card h-80 flex flex-col relative z-0">
+                    <h2 className="font-semibold text-[var(--text-main)] mb-4">Cash Flow Overview</h2>
+                    <div className="flex-1 w-full min-h-[200px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={barData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                <XAxis dataKey="name" tick={{ fill: 'var(--text-muted)', fontSize: 12 }} stroke="var(--border-color)" />
+                                <YAxis tickFormatter={(val) => `₹${val / 1000}k`} tick={{ fill: 'var(--text-muted)', fontSize: 12 }} stroke="var(--border-color)" width={60} />
+                                <Tooltip formatter={(value) => [fmt(value), 'Amount']} contentStyle={{ backgroundColor: 'var(--bg-main)', borderColor: 'var(--border-color)', color: 'var(--text-main)', borderRadius: '8px' }} itemStyle={{ color: 'var(--text-main)' }} cursor={{ fill: 'var(--nav-hover)' }} />
+                                <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
+                                    {barData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
