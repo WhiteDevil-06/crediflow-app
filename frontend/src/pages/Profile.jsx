@@ -5,6 +5,7 @@ import { User, Mail, Calendar, LogOut, Bell, Save, Trash2 } from 'lucide-react';
 import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../components/ConfirmModal';
+import TimeKeeper from 'react-timekeeper';
 
 export default function Profile() {
     const { user, token, login, logout } = useAuth();
@@ -12,6 +13,7 @@ export default function Profile() {
 
     const [emailEnabled, setEmailEnabled] = useState(user?.emailAlerts?.enabled ?? true);
     const [emailTime, setEmailTime] = useState(user?.emailAlerts?.time || '08:00');
+    const [showTimePicker, setShowTimePicker] = useState(false);
     const [currency, setCurrency] = useState(user?.preferences?.currency || 'INR');
     const [saving, setSaving] = useState(false);
     const [showResetModal, setShowResetModal] = useState(false);
@@ -104,17 +106,37 @@ export default function Profile() {
                 </div>
 
                 {emailEnabled && (
-                    <div className="flex flex-col gap-2 p-3 bg-[var(--nav-hover)] border border-[var(--border-color)] rounded-xl animate-in fade-in slide-in-from-top-2">
+                    <div className="flex flex-col gap-2 p-3 bg-[var(--nav-hover)] border border-[var(--border-color)] rounded-xl animate-in fade-in slide-in-from-top-2 relative">
                         <label className="text-sm font-medium text-[var(--text-main)]">Preferred Delivery Time</label>
-                        <select
-                            className="input"
-                            value={emailTime}
-                            onChange={(e) => setEmailTime(e.target.value)}
+                        <div
+                            className="input flex items-center justify-between cursor-pointer"
+                            onClick={() => setShowTimePicker(true)}
                         >
-                            <option value="08:00">08:00 AM (Morning)</option>
-                            <option value="12:00">12:00 PM (Noon)</option>
-                            <option value="18:00">06:00 PM (Evening)</option>
-                        </select>
+                            <span className="text-[var(--text-main)] font-medium">
+                                {(() => {
+                                    const time = emailTime || '08:00';
+                                    const [h, m] = time.split(':');
+                                    const hour = parseInt(h, 10);
+                                    const ampm = hour >= 12 ? 'PM' : 'AM';
+                                    const displayHour = hour % 12 || 12;
+                                    return `${displayHour.toString().padStart(2, '0')}:${m || '00'} ${ampm}`;
+                                })()}
+                            </span>
+                        </div>
+
+                        {showTimePicker && (
+                            <>
+                                <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => setShowTimePicker(false)} />
+                                <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 shadow-2xl rounded-2xl overflow-hidden scale-90 sm:scale-100 dark:brightness-90">
+                                    <TimeKeeper
+                                        time={emailTime || '08:00'}
+                                        onChange={(newTime) => setEmailTime(newTime.formatted24)}
+                                        onDoneClick={() => setShowTimePicker(false)}
+                                        switchToMinuteOnHourSelect
+                                    />
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
 

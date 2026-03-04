@@ -40,9 +40,9 @@ export default function Payments() {
     };
 
     return (
-        <div className="space-y-6 relative overflow-hidden">
+        <div className="space-y-6">
             {/* Hidden export template layer */}
-            <div className="absolute top-[-9999px] left-[-9999px] invisible opacity-0 pointer-events-none">
+            <div className="fixed pointer-events-none z-[-9999]" style={{ left: '-9999px', top: 0 }}>
                 <ReceiptTemplate ref={receiptRef} receiptData={activeReceipt} formatCurrency={formatCurrency} />
             </div>
             <div>
