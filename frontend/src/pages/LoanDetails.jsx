@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { loanAPI, paymentAPI } from '../services/api';
-import { ArrowLeft, FileText, CreditCard, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, FileText, CreditCard, X, ChevronDown, ChevronUp, Download } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { generateAmortizationSchedule } from '../utils/amortization';
+import ReceiptTemplate from '../components/ReceiptTemplate';
+import { generatePDF } from '../utils/pdfGenerator';
 
 function PaymentModal({ loan, onClose, onSuccess, formatCurrency }) {
     const [form, setForm] = useState({ amount: '', paymentDate: new Date().toISOString().slice(0, 10), paymentMethod: 'CASH', notes: '' });
@@ -68,6 +70,9 @@ export default function LoanDetails() {
     const [showModal, setShowModal] = useState(false);
     const [showSchedule, setShowSchedule] = useState(false);
 
+    const receiptRef = useRef(null);
+    const [activeReceipt, setActiveReceipt] = useState(null);
+
     const fetchData = async () => {
         const [lRes, pRes] = await Promise.all([loanAPI.getOne(id), paymentAPI.getByLoan(id)]);
         setLoan(lRes.data.data);
@@ -92,8 +97,26 @@ export default function LoanDetails() {
         loan.startDate
     ) : [];
 
+    const handleDownload = async (payment) => {
+        setActiveReceipt({
+            payment,
+            customerName: loan?.customerId?.name || 'Unknown Customer',
+            loanType: loan?.loanType || 'GIVEN'
+        });
+
+        setTimeout(() => {
+            const dateStr = new Date(payment.paymentDate).toLocaleDateString('en-GB').replace(/\//g, '-');
+            generatePDF(receiptRef, `CrediFlow_Receipt_${dateStr}.pdf`);
+        }, 100);
+    };
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 relative overflow-hidden">
+            {/* Hidden export template layer */}
+            <div className="absolute top-[-9999px] left-[-9999px] invisible opacity-0 pointer-events-none">
+                <ReceiptTemplate ref={receiptRef} receiptData={activeReceipt} formatCurrency={formatCurrency} />
+            </div>
+
             {showModal && <PaymentModal loan={loan} onClose={() => setShowModal(false)} onSuccess={() => { setShowModal(false); fetchData(); }} formatCurrency={formatCurrency} />}
 
             <div className="flex items-center justify-between">
@@ -173,7 +196,16 @@ export default function LoanDetails() {
                                     <p className="font-medium text-[var(--text-main)]">{formatCurrency(p.amount)}</p>
                                     <p className="text-xs text-[var(--text-muted)]">{p.paymentMethod} · {p.notes}</p>
                                 </div>
-                                <p className="text-sm text-[var(--text-muted)]">{new Date(p.paymentDate).toLocaleDateString('en-IN')}</p>
+                                <div className="text-right flex items-center gap-3">
+                                    <p className="text-sm text-[var(--text-muted)]">{new Date(p.paymentDate).toLocaleDateString('en-IN')}</p>
+                                    <button
+                                        className="p-1.5 text-blue-500 hover:text-blue-600 bg-blue-500/10 hover:bg-blue-500/20 rounded border border-blue-500/20 transition-all flex items-center justify-center"
+                                        onClick={() => handleDownload(p)}
+                                        title="Download PDF Receipt"
+                                    >
+                                        <Download size={14} />
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
