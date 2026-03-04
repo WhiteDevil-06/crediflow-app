@@ -117,4 +117,46 @@
     .badge-taken {
         @apply bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-orange-500/20;
     }
+
+    /* react-timekeeper global overrides */
+    .react-timekeeper {
+        background-color: var(--bg-card) !important;
+        box-shadow: none !important;
+    }
+
+    .react-timekeeper__top-bar {
+        background-color: var(--nav-hover) !important;
+    }
+
+    .react-timekeeper__tb-hour,
+    .react-timekeeper__tb-minute,
+    .react-timekeeper__tb-colon {
+        color: var(--text-main) !important;
+    }
+
+    .react-timekeeper__time-wrapper--active,
+    .react-timekeeper__meridiem-toggle--active {
+        color: #3b82f6 !important;
+    }
+
+    .react-timekeeper__meridiem-toggle {
+        color: var(--text-muted) !important;
+    }
+
+    .react-timekeeper__clock-wrapper {
+        background-color: var(--input-bg) !important;
+    }
+
+    .react-timekeeper__clock {
+        background-color: var(--nav-hover) !important;
+    }
+
+    .react-timekeeper__button {
+        color: var(--text-main) !important;
+    }
+
+    .react-timekeeper__clock-hours span,
+    .react-timekeeper__clock-minutes span {
+        color: var(--text-main) !important;
+    }
 }
