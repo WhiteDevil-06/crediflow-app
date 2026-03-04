@@ -26,7 +26,7 @@ const register = async (req, res) => {
         res.status(201).json({
             success: true,
             token: generateToken(user._id),
-            user: { id: user._id, name: user.name, email: user.email },
+            user: { id: user._id, name: user.name, email: user.email, emailAlerts: user.emailAlerts },
         });
     } catch (err) {
         res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
@@ -50,7 +50,7 @@ const login = async (req, res) => {
         res.json({
             success: true,
             token: generateToken(user._id),
-            user: { id: user._id, name: user.name, email: user.email },
+            user: { id: user._id, name: user.name, email: user.email, emailAlerts: user.emailAlerts },
         });
     } catch (err) {
         res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
@@ -59,7 +59,28 @@ const login = async (req, res) => {
 
 // GET /api/auth/me
 const getMe = async (req, res) => {
-    res.json({ success: true, user: { id: req.user._id, name: req.user.name, email: req.user.email } });
+    res.json({ success: true, user: { id: req.user._id, name: req.user.name, email: req.user.email, emailAlerts: req.user.emailAlerts } });
 };
 
-module.exports = { register, login, getMe };
+// PUT /api/auth/profile
+const updateProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+        if (req.body.emailAlerts !== undefined) {
+            user.emailAlerts = req.body.emailAlerts;
+        }
+
+        await user.save();
+
+        res.json({
+            success: true,
+            user: { id: user._id, name: user.name, email: user.email, emailAlerts: user.emailAlerts }
+        });
+    } catch (err) {
+        res.status(err.name === 'ValidationError' ? 400 : 500).json({ success: false, message: err.message });
+    }
+};
+
+module.exports = { register, login, getMe, updateProfile };

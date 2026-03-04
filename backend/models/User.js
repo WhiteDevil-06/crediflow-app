@@ -11,6 +11,10 @@ const UserSchema = new mongoose.Schema({
         match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Invalid email'],
     },
     passwordHash: { type: String, required: true },
+    emailAlerts: {
+        enabled: { type: Boolean, default: true },
+        time: { type: String, default: '08:00' } // Uses 24h string formats like 08:00, 14:00
+    }
 }, { timestamps: true });
 
 UserSchema.methods.matchPassword = async function (enteredPassword) {
